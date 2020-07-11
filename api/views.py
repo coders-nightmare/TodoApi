@@ -23,7 +23,7 @@ def apiOverview(request):
 # we have couple of task so couple of item that will be rendered out from todo list
 @api_view(['GET'])
 def taskList(request):
-    tasks = Task.objects.all()
+    tasks = Task.objects.all().order_by('-id')
     # it serializes data specified and many=true means it serialize all query
     serializer = TaskSerializer(tasks, many=True)
     return Response(serializer.data)

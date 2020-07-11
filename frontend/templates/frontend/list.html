@@ -131,6 +131,8 @@
         }
         const csrftoken = getCookie('csrftoken');
 
+        var activeItem = null;
+
         buildList();
         function buildList() {
             var wrapper = document.getElementById('list-wrapper')
@@ -157,6 +159,25 @@
                             </div>
                         `
                         wrapper.innerHTML += item
+
+                    }
+                    //this loop select the particular item when we click on edit btn
+                    for (var i in list) {
+
+                        var editBtn = document.getElementsByClassName('edit')[i]
+                        var deleteBtn = document.getElementsByClassName('delete')[i]
+                        editBtn.addEventListener('click', (function (item) {
+                            return function () {
+                                editItem(item)
+                            }
+                        })(list[i]));
+
+                        deleteBtn.addEventListener('click', (function (item) {
+                            return function () {
+                                deleteItem(item)
+                            }
+                        })(list[i]));
+
                     }
                 })
         }
@@ -168,6 +189,10 @@
             e.preventDefault()
             console.log("form submitted")
             var url = "http://127.0.0.1:8000/api/task-create/"
+            if (activeItem != null) {
+                var url = `http://127.0.0.1:8000/api/task-update/${activeItem.id}`
+                activeItem = null;
+            }
             var title = document.getElementById('title').value
             fetch(url, {
                 method: 'POST',
@@ -179,10 +204,29 @@
             }
             ).then(function (response) {
                 buildList()
+                document.getElementById('form').reset();
+                //it clear inner value after form submits
             })
         });
 
+        function editItem(item) {
+            console.log('item clicked', item);
+            activeItem = item;
+            document.getElementById('title').value = activeItem.title;
+        }
 
+        function deleteItem(item) {
+            console.log("clicked delete", item)
+            fetch(`http://127.0.0.1:8000/api/task-delete/${item.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                }
+            }).then((response) => {
+                buildList()
+            })
+        }
 
     </script>
     <!-- Optional JavaScript -->
